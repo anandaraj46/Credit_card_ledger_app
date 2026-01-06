@@ -4,9 +4,30 @@ import '../models/entry.dart';
 import 'spent_entry_detail_screen.dart';
 import '../data/cards.dart';
 import '../utils/clear_utils.dart';
+import '../utils/undo_buffer.dart';
+
 
 class SpentScreen extends StatelessWidget {
   const SpentScreen({super.key});
+void _showUndoSnackbar(BuildContext context) {
+  if (!undoBuffer.hasData) return;
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: const Text('Transactions deleted'),
+      action: SnackBarAction(
+        label: 'UNDO',
+        onPressed: () {
+          final restored = undoBuffer.restore();
+          if (restored != null) {
+            dummyEntries.addAll(restored);
+          }
+        },
+      ),
+      duration: const Duration(seconds: 5),
+    ),
+  );
+}
 
   @override
   Widget build(BuildContext context) {
@@ -103,7 +124,9 @@ class SpentScreen extends StatelessWidget {
             onPressed: () {
               clearAllEntries(dummyEntries);
               Navigator.pop(context);
-            },
+               _showUndoSnackbar(context);
+    },
+
             child: const Text('Clear'),
           ),
         ],
@@ -127,7 +150,9 @@ class SpentScreen extends StatelessWidget {
                 onTap: () {
                   clearEntriesByCard(dummyEntries, card.name);
                   Navigator.pop(context);
+                  _showUndoSnackbar(context);
                 },
+
               );
             }).toList(),
           ),

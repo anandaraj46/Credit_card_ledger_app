@@ -7,79 +7,97 @@ import '../data/dummy_entries.dart';
 import '../utils/ledger_utils.dart';
 import 'add_entry_screen.dart';
 
-
-
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  Future<void> _refresh() async {
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
     final spent = totalSpent(dummyEntries);
     final received = totalReceived(dummyEntries);
     final pending = pendingAmount(dummyEntries);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Ledger'),
       ),
       floatingActionButton: FloatingActionButton(
-  onPressed: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const AddEntryScreen()),
-    );
-  },
-  child: const Icon(Icons.add),
-),
-
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            DashboardTile(
-              icon: Icons.arrow_upward,
-              title: 'Amount Spent',
-              amount: spent,
-              color: Colors.red,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const SpentScreen(),
-                  ),
-                  );
-                },
+        onPressed: () async {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const AddEntryScreen()),
+          );
+          // Force refresh when coming back
+          setState(() {});
+        },
+        child: const Icon(Icons.add),
+      ),
+      body: RefreshIndicator(
+        onRefresh: _refresh,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                DashboardTile(
+                  icon: Icons.arrow_upward,
+                  title: 'Amount Spent',
+                  amount: spent,
+                  color: Colors.red,
+                  onTap: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const SpentScreen(),
+                      ),
+                    );
+                    setState(() {});
+                  },
+                ),
+                const SizedBox(height: 16),
+                DashboardTile(
+                  icon: Icons.arrow_downward,
+                  title: 'Amount Received',
+                  amount: received,
+                  color: Colors.green,
+                  onTap: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ReceivedScreen(),
+                      ),
+                    );
+                    setState(() {});
+                  },
+                ),
+                const SizedBox(height: 16),
+                DashboardTile(
+                  icon: Icons.hourglass_bottom,
+                  title: 'Pending Amount',
+                  amount: pending,
+                  color: Colors.orange,
+                  onTap: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const PendingScreen(),
+                      ),
+                    );
+                    setState(() {});
+                  },
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            DashboardTile(
-              icon: Icons.arrow_downward,
-              title: 'Amount Received',
-              amount: received,
-              color: Colors.green,
-              onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ReceivedScreen(),
-                    ),
-                  );
-                },
-            ),
-            const SizedBox(height: 16),
-            DashboardTile(
-              icon: Icons.hourglass_bottom,
-              title: 'Pending Amount',
-              amount: pending,
-              color: Colors.orange,
-              onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const PendingScreen(),
-                    ),
-                  );
-              },
-            ),
-          ],
+          ),
         ),
       ),
     );
