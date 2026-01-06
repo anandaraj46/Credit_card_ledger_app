@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../models/entry.dart';
-import '../data/dummy_entries.dart';
 import '../data/cards.dart';
 import '../models/card_model.dart';
+import '../database/ledger_database.dart';
 
 class AddEntryScreen extends StatefulWidget {
   const AddEntryScreen({super.key});
@@ -21,7 +21,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
   CardModel? _selectedCard;
 
   // ---------------- SAVE ENTRY ----------------
-  void _saveEntry() {
+  Future<void> _saveEntry() async {
     final int? amount = int.tryParse(_amountController.text);
     final String person = _personController.text.trim();
 
@@ -29,12 +29,12 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
       return;
     }
 
-    // Optional enforcement: card must be selected for spent
+    // Enforce card selection for spent
     if (_type == EntryType.spent && _selectedCard == null) {
       return;
     }
 
-    dummyEntries.add(
+    await LedgerDatabase.instance.insertEntry(
       Entry(
         type: _type,
         amount: amount,
@@ -45,7 +45,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
       ),
     );
 
-    Navigator.pop(context);
+    Navigator.pop(context, true);
   }
 
   // ---------------- ADD NEW CARD ----------------
